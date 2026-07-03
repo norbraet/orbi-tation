@@ -4,7 +4,7 @@
   "description": "A Chrome DevTools snippet that tracks DOM mutations, logs them cleanly in the console, and visually highlights changed elements in real time.",
   "main": "dom-mutation-tracker.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -22,6 +22,7 @@
     "node": ">=24.11"
   },
   "devDependencies": {
+    "jsdom": "^29.1.1",
     "prettier": "3.8.0"
   }
 }
