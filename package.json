@@ -1,12 +1,62 @@
 {
   "name": "dom-mutation-tracker",
   "version": "1.0.0",
-  "description": "A Chrome DevTools snippet that tracks DOM mutations, logs them cleanly in the console, and visually highlights changed elements in real time.",
-  "main": "dom-mutation-tracker.js",
+  "description": "A typed, framework-agnostic DOM mutation tracker for npm and Chrome DevTools snippets.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "default": "./dist/index.js"
+    },
+    "./panel": {
+      "import": {
+        "types": "./dist/panel.d.ts",
+        "default": "./dist/panel.js"
+      },
+      "require": {
+        "types": "./dist/panel.d.cts",
+        "default": "./dist/panel.cjs"
+      },
+      "default": "./dist/panel.js"
+    },
+    "./standalone": "./dist/standalone.iife.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "sideEffects": [
+    "./dist/standalone.iife.js"
+  ],
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ],
   "scripts": {
-    "test": "node --test",
+    "build": "npm run clean && tsdown",
+    "clean": "node --eval \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "test": "npm run build && node --test",
+    "test:package": "npm run build && node scripts/smoke-package.mjs",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "verify": "npm run typecheck && npm test && npm run test:package",
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -23,6 +73,8 @@
   },
   "devDependencies": {
     "jsdom": "^29.1.1",
-    "prettier": "3.8.0"
+    "prettier": "3.8.0",
+    "tsdown": "^0.22.3",
+    "typescript": "^6.0.3"
   }
 }

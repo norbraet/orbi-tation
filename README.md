@@ -1,240 +1,198 @@
 # DOM Mutation Tracker
 
-A lightweight JavaScript utility that tracks DOM mutations in real-time, providing clean console logging and visual highlighting of changed elements.
+A framework-agnostic debugging utility that records DOM mutations as typed,
+serializable events. Use the side-effect-free npm API in an application or the
+auto-starting IIFE bundle as a Chrome DevTools snippet.
 
 ![Chrome DevTools Compatible](https://img.shields.io/badge/Chrome%20DevTools-Compatible-green)
-![No Dependencies](https://img.shields.io/badge/Dependencies-None-blue)
-![Pure JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)
+![Zero Runtime Dependencies](https://img.shields.io/badge/Runtime%20Dependencies-0-blue)
+![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue)
 
 ## Features
 
-- **Real-time DOM Monitoring** - Tracks all DOM changes as they happen
-- **Visual Highlighting** - Changed elements flash red for easy identification
-- **Clean Console Logging** - Organized, collapsible console output
-- **Multiple Mutation Types** - Tracks attributes, child nodes, and text changes
-- **Loop Prevention** - Intelligent filtering to avoid infinite loops
-- **Zero Dependencies** - Pure JavaScript, no external libraries
-- **Interactive API** - Simple functions to control tracking
+- Attribute, child-list, and character-data observation
+- Serializable events without native DOM nodes or `MutationRecord` objects
+- Strict TypeScript types and declaration maps
+- Side-effect-free ESM and CommonJS package entries
+- Browser-ready IIFE bundle with intentional auto-start
+- Console presentation and visual highlighting
+- Bounded history, deduplication, subscriptions, and explicit lifecycle control
+- Zero runtime dependencies
 
-## Quick Start
+## Install
 
-### Chrome DevTools Snippet (Recommended)
-
-1. **Open Chrome DevTools** (`F12` or `Ctrl+Shift+I`)
-2. **Go to Sources tab** → **Snippets** (left sidebar)
-3. **Create new snippet** → Name it `dom-mutation-tracker`
-4. **Copy and paste** the entire `dom-mutation-tracker.js` content
-5. **Run the snippet** (`Ctrl+Enter` or `Righclick + Run`)
-
-### Alternative Usage
-
-```javascript
-// Include in your HTML
-<script src="dom-mutation-tracker.js"></script>;
-
-// Or load dynamically
-fetch("dom-mutation-tracker.js")
-  .then((response) => response.text())
-  .then((script) => eval(script));
+```bash
+npm install --save-dev dom-mutation-tracker
 ```
 
-## Usage Examples
+Importing the package does not start an observer or change the page.
 
-### Basic Usage
+```ts
+import { createTracker } from "dom-mutation-tracker";
 
-```javascript
-// Tracking starts automatically when loaded
-// Watch the console for mutation logs!
+const tracker = createTracker();
+const unsubscribe = tracker.subscribe((event) => {
+  console.log(event);
+});
 
-// Manual control
-stopMutationTracker(); // Stop tracking
-startMutationTracker(); // Resume tracking
+tracker.start();
+
+// Later:
+unsubscribe();
+tracker.stop();
 ```
 
-### API Reference
+## Console and highlight presentation
 
-| Function                 | Description                            |
-| ------------------------ | -------------------------------------- |
-| `startMutationTracker()` | Start/resume DOM mutation tracking     |
-| `stopMutationTracker()`  | Stop tracking and cleanup              |
-| `getMutationLog()`       | View all recorded mutations in console |
-| `clearMutationLog()`     | Clear the mutation history             |
+The optional panel entry owns presentation behavior so the core remains free of
+UI side effects.
 
-### Console Output Examples
+```ts
+import { createTracker } from "dom-mutation-tracker";
+import { createPanel } from "dom-mutation-tracker/panel";
 
-```
-class → button.primary     // Attribute change
-Added → div.container       // Child nodes added
-Removed → ul.list          // Child nodes removed
-Text → span "Hello..."      // Text content changed
-```
+const tracker = createTracker();
+const panel = createPanel(tracker, {
+  highlightColor: "#ff0000",
+  highlightDuration: 3000,
+});
 
-## Configuration
+panel.mount();
+tracker.start();
 
-Customize the tracker by modifying the `CONFIG` object:
-
-```javascript
-const CONFIG = {
-  highlightColor: "#ff0000", // Highlight color (red)
-  highlightDuration: 3000, // How long to highlight (3s)
-  maxLogEntries: 100, // Maximum logged mutations
-  debounceTime: 50, // Duplicate filtering (50ms)
-  highlightClassName: "mutation-tracker-highlight",
-};
+// Cleanup:
+tracker.stop();
+panel.unmount();
 ```
 
-## What Gets Tracked
+## Chrome DevTools snippet
 
-### Attribute Changes
+The standalone IIFE intentionally mounts the presentation, starts tracking,
+and exposes browser globals when evaluated.
 
-- Class modifications
-- Style changes
-- Data attributes
-- ID changes
-- Any attribute modification
+From a repository checkout:
 
-**Example Output:**
-
-```
-style → div.modal
-  Element: <div class="modal">
-  Attribute: style
-  Old: display: none
-  New: display: block
-  Time: 14:23:15
+```bash
+npm install
+npm run build
 ```
 
-### Child Node Changes
+Copy `dist/standalone.iife.js` into a DevTools snippet and run it. The same file
+is included in the npm package at
+`node_modules/dom-mutation-tracker/dist/standalone.iife.js`.
 
-- Elements added to DOM
-- Elements removed from DOM
-- Text nodes inserted/removed
+The namespaced global is the preferred standalone API:
 
-**Example Output:**
-
-```
-Added → ul.menu
-  Parent: <ul class="menu">
-  Added: [<li>New Item</li>]
-  Time: 14:23:16
-```
-
-### Text Content Changes
-
-- Text node modifications
-- innerHTML changes affecting text
-
-**Example Output:**
-
-```
-Text → span "Loading complete"
-  Text Node: #text
-  Parent: <span class="status">
-  Old: "Loading..."
-  New: "Loading complete"
-  Time: 14:23:17
+```js
+DOMMutationTracker.stop();
+DOMMutationTracker.start();
+DOMMutationTracker.clear();
+DOMMutationTracker.getEvents();
+DOMMutationTracker.subscribe((event) => console.log(event));
 ```
 
-## Common Use Cases
+The v1 globals remain as compatibility aliases:
 
-### Debugging Dynamic Content
+| Function                 | Description                                 |
+| ------------------------ | ------------------------------------------- |
+| `startMutationTracker()` | Start or resume tracking and presentation   |
+| `stopMutationTracker()`  | Stop tracking and remove presentation       |
+| `getMutationLog()`       | Log and return the normalized event history |
+| `clearMutationLog()`     | Clear event history and deduplication state |
 
-```javascript
-// Perfect for tracking:
-// - React/Vue component updates
-// - AJAX content loading
-// - Animation state changes
-// - Form validation feedback
+## Core API
+
+### `createTracker(options?)`
+
+Options:
+
+| Option           | Default         | Description                                      |
+| ---------------- | --------------- | ------------------------------------------------ |
+| `root`           | `document.body` | DOM node observed after `start()`                |
+| `maxEvents`      | `100`           | Positive integer event-history limit             |
+| `dedupeWindowMs` | `50`            | Non-negative duplicate suppression window        |
+| `onError`        | `console.error` | Receives normalized record and listener failures |
+
+The returned tracker provides:
+
+- `start()` — begin observing; repeated calls are safe.
+- `stop()` — disconnect the observer; repeated calls are safe.
+- `clear()` — clear history and deduplication state without stopping.
+- `getEvents()` — return a readonly snapshot of normalized events.
+- `subscribe(listener)` — receive events and return an idempotent unsubscribe
+  function.
+
+Invalid configuration fails synchronously. Starting without an available root
+or `MutationObserver` throws a `TrackerError` with a stable error code.
+
+## Event model
+
+`TrackerMutationEvent` is a discriminated union of:
+
+- `TrackerAttributeEvent`
+- `TrackerChildListEvent`
+- `TrackerCharacterDataEvent`
+
+Every event has a monotonic `sequence`, ISO timestamp, type, and serializable
+target description. Child nodes are represented by compact summaries. Events
+do not expose live DOM nodes or native mutation records.
+
+```ts
+tracker.subscribe((event) => {
+  if (event.type === "attributes") {
+    console.log(event.attributeName, event.oldValue, event.newValue);
+  }
+});
 ```
 
-### Performance Analysis
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the complete public
+contract and module boundaries.
 
-```javascript
-// Monitor excessive DOM modifications
-startMutationTracker();
-// ... perform actions ...
-const log = getMutationLog();
-console.log(`Total mutations: ${log.length}`);
+## Package outputs
+
+`npm run build` creates:
+
+- `dist/index.js` and `dist/index.cjs` — side-effect-free core entry
+- `dist/panel.js` and `dist/panel.cjs` — optional presentation entry
+- `dist/standalone.iife.js` — auto-starting browser/DevTools bundle
+- `.d.ts`, `.d.cts`, declaration maps, and JavaScript source maps
+- `src/` — TypeScript sources referenced by declaration maps
+
+Package contents and both ESM and CommonJS imports are verified from the packed
+tarball by `npm run test:package`.
+
+## Development
+
+```bash
+npm run format
+npm run format:check
+npm run typecheck
+npm test
+npm run test:package
 ```
 
-### Development Workflow
-
-```javascript
-// In Chrome DevTools Console:
-startMutationTracker();
-// Click buttons, interact with page
-// Watch mutations in real-time!
-stopMutationTracker();
-```
-
-## Troubleshooting
-
-### High Mutation Count
-
-If you see too many mutations:
-
-- Increase `debounceTime` in config
-- Check for infinite loops in your code
-- Look for excessive style recalculations
-
-### Missing Mutations
-
-- Ensure tracking is active: check console for "DOM Mutation Tracker Started"
-- Some mutations might be filtered as duplicates
-- Check if mutations happen outside `document.body`
-
-### Performance Impact
-
-- Tracking adds minimal overhead
-- Stop tracking when not needed: `stopMutationTracker()`
-- Limit `maxLogEntries` for long sessions
+`npm run verify` runs strict type-checking, unit tests, builds, package packing,
+and ESM/CommonJS smoke imports.
 
 ## Limitations
 
-- Only tracks mutations within `document.body`
-- Doesn't track mutations in iframes
-- Doesn't track mutations in CSS, otherwise the element hightlighting would retrigger the observer
-- Limited to modern browsers supporting `MutationObserver`
-- Large numbers of rapid mutations may impact performance
+- Observation defaults to `document.body`; pass `root` for another DOM node.
+- Closed Shadow DOM and iframe contents are not observed automatically.
+- Selectors describe the target at mutation-processing time and may become
+  stale after later DOM changes.
+- Large mutation volumes still have runtime cost despite bounded history and
+  deduplication.
 
-## Browser Compatibility
+## Browser compatibility
 
-- ✅ Chrome/Chromium (all recent versions)
-- ✅ Firefox (all recent versions)
-- ✅ Safari (all recent versions)
-- ✅ Edge (all recent versions)
-- ❌ Internet Explorer (not supported)
-
-## Contributing
-
-Contributions are welcome! Please feel free to:
-
-- Report bugs
-- Suggest features
-- Submit pull requests
-- Improve documentation
+The IIFE targets the latest two releases of Chrome, Firefox, Safari, and Edge.
+Internet Explorer is not supported.
 
 ## Roadmap
 
-The project is evolving from a DevTools snippet into an installable,
-framework-agnostic frontend debugging tool with an isolated live UI panel. See
-the [product roadmap](docs/ROADMAP.md) for the architecture direction,
-milestones, and recommended implementation order. The accepted v2 module
-boundaries, lifecycle API, and event model are recorded in the
-[architecture decision](docs/ARCHITECTURE.md).
+See the [product roadmap](docs/ROADMAP.md) for milestones and recommended
+implementation order.
 
 ## License
 
-This project is released under the MIT License. Feel free to use it in personal and commercial projects.
-
-## Acknowledgments
-
-- Built using the native `MutationObserver` API
-- Inspired by the need for better DOM debugging tools
-- Designed for Chrome DevTools workflow
-
----
-
-**Happy DOM debugging! **
-
-_Found this useful? Give it a ⭐ and share with fellow developers!_
+This project is released under the MIT License.

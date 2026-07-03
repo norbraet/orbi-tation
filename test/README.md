@@ -3,8 +3,8 @@
 `npm test` runs the TypeScript unit suite once with Node's built-in test runner.
 Node 24 executes erasable TypeScript syntax directly, and its mock-timer API
 provides deterministic clock and highlight-timer coverage without another test
-framework dependency. jsdom supplies the DOM APIs needed by the current
-standalone implementation.
+framework dependency. jsdom supplies DOM APIs for the typed core, panel
+presentation, and built standalone bundle.
 
 The unit suite owns fast coverage for:
 
@@ -13,6 +13,8 @@ The unit suite owns fast coverage for:
 - deduplication timing and bounded log history
 - lifecycle idempotency, restart, clear, and observer cleanup
 - filtering of tracker-owned mutations
+- option validation and per-record/listener error isolation
+- side-effect-free core creation and standalone global compatibility
 - regressions for fixed bugs, beginning with the SVG failure from #1
 
 Every bug fix should add or extend a focused unit regression here. Tests for

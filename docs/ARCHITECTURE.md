@@ -1,6 +1,6 @@
 # v2 Architecture and Public API
 
-Status: accepted for the v2 package restructure in
+Status: accepted and implemented by the v2 package restructure in
 [#2](https://github.com/norbraet/dom-mutation-tracker/issues/2).
 
 This document records the contract established by
@@ -21,7 +21,7 @@ decision.
 
 ## Module boundaries
 
-The source will be split into three layers by #2:
+The maintained source is split into three layers:
 
 ```text
 src/standalone.ts ──> src/panel/ ──> src/core/
@@ -107,8 +107,8 @@ Defaults:
 - `dedupeWindowMs`: `50`
 - `onError`: report to `console.error`
 
-`root` is part of the contract here; support for observing alternative roots
-is implemented in #5. More observation and filtering options may be added by
+`root` is part of the contract here. Issue #5 expands configurable-root
+behavior and coverage. More observation and filtering options may be added by
 their owning issues without changing the lifecycle API.
 
 ### Option ownership
@@ -264,12 +264,13 @@ The following existing globals remain as compatibility aliases during v2:
 - `getMutationLog()` delegates to `DOMMutationTracker.getEvents()` and keeps
   the current console presentation in the standalone layer.
 
-The aliases are deprecated for npm usage but are not removed by #2. This keeps
+The aliases are deprecated for npm usage but remain available in v2. This keeps
 saved DevTools snippets working while establishing one extensible global.
 
 ## Packaging and compatibility decisions
 
-- #2 will ship ESM, CJS, declaration, source-map, and standalone IIFE outputs.
+- The package ships ESM, CJS, declaration, source-map, and standalone IIFE
+  outputs.
 - ESM is the primary documented npm format. CJS is supported for v2 and may be
   reconsidered only in a future major version.
 - Package modules target ES2022. The IIFE targets current evergreen Chrome,
