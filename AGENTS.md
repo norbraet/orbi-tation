@@ -90,7 +90,7 @@ Consistency is more important than personal preference.
 3. Do not move files unless required.
 4. Do not introduce new dependencies unless they provide significant value.
 5. Avoid changing more modules than necessary.
-6. Keep each commit focused on one concern.
+6. Do not commit unless you have been asked for to do it. In that case keep each commit focused on one concern.
 
 ---
 
@@ -237,7 +237,7 @@ Do not add another dependency.
 
 ## Commits
 
-Use the **Conventional Commits** specification for every commit message.
+If you were asked for to commit, then use the **Conventional Commits** specification for every commit message.
 The **first line** of the commit message must follow this format:
 
 `type(optional-scope)!: description`
