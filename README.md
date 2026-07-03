@@ -219,7 +219,9 @@ Contributions are welcome! Please feel free to:
 The project is evolving from a DevTools snippet into an installable,
 framework-agnostic frontend debugging tool with an isolated live UI panel. See
 the [product roadmap](docs/ROADMAP.md) for the architecture direction,
-milestones, and recommended implementation order.
+milestones, and recommended implementation order. The accepted v2 module
+boundaries, lifecycle API, and event model are recorded in the
+[architecture decision](docs/ARCHITECTURE.md).
 
 ## License
 

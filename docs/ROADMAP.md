@@ -31,11 +31,11 @@ The product should help a developer answer:
   pipeline.
 - Browser limitations are documented rather than hidden.
 
-## Working architecture direction
+## Accepted architecture direction
 
-The exact public contract will be decided in
-[#22](https://github.com/norbraet/dom-mutation-tracker/issues/22). The current
-direction separates the product into three layers with one-way dependencies:
+The public contract is recorded in the
+[v2 architecture and public API decision](ARCHITECTURE.md). The product is
+separated into three layers with one-way dependencies:
 
 1. **Core engine** — observes DOM mutations and emits normalized, serializable
    events.
@@ -127,17 +127,19 @@ documented no-go decision is a valid completion.
 - Treat timeline replay as inspection first, not as reapplying mutations to the
   page.
 
-## Open architecture decisions
+## Architecture decisions
 
-Resolve these in #22 before foundational implementation fans out:
+The accepted #22 decision defines:
 
-- Exact public API and normalized event schema.
-- Standalone global names and auto-start behavior.
-- Browser and package compatibility targets, including whether CJS remains
-  necessary long-term.
-- Default event limits and which advanced diagnostics are opt-in.
-- Closed versus open ShadowRoot for the panel, balanced against testability and
-  isolation.
+- `createTracker(options)` and the tracker lifecycle methods.
+- A serializable `TrackerMutationEvent` discriminated union.
+- A namespaced standalone global, intentional IIFE auto-start, and legacy
+  compatibility aliases.
+- ES2022 package modules, evergreen-browser IIFE support, and CJS support for
+  v2.
+- A default 100-event limit with advanced diagnostics kept opt-in.
+- An open ShadowRoot for panel isolation, accessibility inspection, and
+  testability.
 
 ## v2 success criteria
 
