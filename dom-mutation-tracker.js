@@ -47,14 +47,64 @@
   }
 
   // ================================= Selectors =================================
+  function getElementClasses(element) {
+    if (!element || typeof element.getAttribute !== "function") return [];
+
+    const className = element.getAttribute("class");
+    if (typeof className !== "string") return [];
+
+    return className.trim().split(/\s+/).filter(Boolean);
+  }
+
+  function escapeCssIdentifier(value) {
+    if (window.CSS && typeof window.CSS.escape === "function") {
+      return window.CSS.escape(value);
+    }
+
+    const string = String(value);
+
+    return Array.from(string, (character, index) => {
+      const codePoint = character.codePointAt(0);
+
+      if (codePoint === 0) return "\uFFFD";
+
+      if (
+        (codePoint >= 1 && codePoint <= 31) ||
+        codePoint === 127 ||
+        (index === 0 && codePoint >= 48 && codePoint <= 57) ||
+        (index === 1 && codePoint >= 48 && codePoint <= 57 && string[0] === "-")
+      ) {
+        return `\\${codePoint.toString(16)} `;
+      }
+
+      if (index === 0 && character === "-" && string.length === 1) {
+        return "\\-";
+      }
+
+      if (
+        codePoint >= 128 ||
+        character === "-" ||
+        character === "_" ||
+        (codePoint >= 48 && codePoint <= 57) ||
+        (codePoint >= 65 && codePoint <= 90) ||
+        (codePoint >= 97 && codePoint <= 122)
+      ) {
+        return character;
+      }
+
+      return `\\${character}`;
+    }).join("");
+  }
+
   function getElementSelector(element) {
     if (!element || element.nodeType !== Node.ELEMENT_NODE) return "unknown";
 
     const tag = element.tagName.toLowerCase();
-    const id = element.id ? `#${element.id}` : "";
-    const classes = element.className
-      ? `.${element.className.replace(/\s+/g, ".")}`
-      : "";
+    const idValue = element.getAttribute("id");
+    const id = idValue ? `#${escapeCssIdentifier(idValue)}` : "";
+    const classes = getElementClasses(element)
+      .map((className) => `.${escapeCssIdentifier(className)}`)
+      .join("");
     const nthChild =
       Array.from(element.parentNode?.children || []).indexOf(element) + 1;
 
@@ -65,10 +115,10 @@
     if (!element || element.nodeType !== Node.ELEMENT_NODE) return "unknown";
 
     const tag = element.tagName.toLowerCase();
-    const id = element.id ? `#${element.id}` : "";
-    const firstClass = element.className
-      ? `.${element.className.split(" ")[0]}`
-      : "";
+    const idValue = element.getAttribute("id");
+    const id = idValue ? `#${idValue}` : "";
+    const firstClassName = getElementClasses(element)[0];
+    const firstClass = firstClassName ? `.${firstClassName}` : "";
 
     return `${tag}${id}${firstClass}`;
   }
@@ -79,7 +129,7 @@
     // Check if it's our highlight class being added/removed
     if (mutation.attributeName === "class") {
       const target = mutation.target;
-      const newClasses = target.className || "";
+      const newClasses = getElementClasses(target);
       const oldClasses = mutation.oldValue || "";
 
       const isHighlightClassChange =
@@ -142,65 +192,73 @@
     return false;
   }
 
+  function processMutation(mutation) {
+    // Skip mutations caused by our highlighting
+    if (isHighlightMutation(mutation)) {
+      return;
+    }
+
+    const target = mutation.target;
+    const mutationKey = createMutationKey(mutation, target);
+
+    // Skip duplicate mutations
+    if (isDuplicateMutation(mutationKey)) {
+      return;
+    }
+
+    const timestamp = new Date().toISOString();
+    const selector = getElementSelector(target);
+
+    let logData = {
+      timestamp,
+      type: mutation.type,
+      target,
+      selector,
+      mutation,
+    };
+
+    // Highlight the mutated element
+    if (target.nodeType === Node.ELEMENT_NODE) {
+      highlightElement(target);
+    } else if (target.parentElement) {
+      highlightElement(target.parentElement);
+    }
+
+    // Handle different mutation types
+    switch (mutation.type) {
+      case "attributes":
+        logData.attributeName = mutation.attributeName;
+        logData.oldValue = mutation.oldValue;
+        logData.newValue = target.getAttribute(mutation.attributeName);
+        logAttributesMutation(logData);
+        break;
+
+      case "childList":
+        logData.addedNodes = Array.from(mutation.addedNodes);
+        logData.removedNodes = Array.from(mutation.removedNodes);
+        logChildListMutation(logData);
+        break;
+
+      case "characterData":
+        logData.oldValue = mutation.oldValue;
+        logData.newValue = target.textContent;
+        logCharacterDataMutation(logData);
+        break;
+    }
+
+    // Store in log with size limit
+    mutationLog.push(logData);
+    if (mutationLog.length > CONFIG.maxLogEntries) {
+      mutationLog.shift();
+    }
+  }
+
   function processMutations(mutations) {
     mutations.forEach((mutation) => {
-      // Skip mutations caused by our highlighting
-      if (isHighlightMutation(mutation)) {
-        return;
-      }
-
-      const target = mutation.target;
-      const mutationKey = createMutationKey(mutation, target);
-
-      // Skip duplicate mutations
-      if (isDuplicateMutation(mutationKey)) {
-        return;
-      }
-
-      const timestamp = new Date().toISOString();
-      const selector = getElementSelector(target);
-
-      let logData = {
-        timestamp,
-        type: mutation.type,
-        target,
-        selector,
-        mutation,
-      };
-
-      // Highlight the mutated element
-      if (target.nodeType === Node.ELEMENT_NODE) {
-        highlightElement(target);
-      } else if (target.parentElement) {
-        highlightElement(target.parentElement);
-      }
-
-      // Handle different mutation types
-      switch (mutation.type) {
-        case "attributes":
-          logData.attributeName = mutation.attributeName;
-          logData.oldValue = mutation.oldValue;
-          logData.newValue = target.getAttribute(mutation.attributeName);
-          logAttributesMutation(logData);
-          break;
-
-        case "childList":
-          logData.addedNodes = Array.from(mutation.addedNodes);
-          logData.removedNodes = Array.from(mutation.removedNodes);
-          logChildListMutation(logData);
-          break;
-
-        case "characterData":
-          logData.oldValue = mutation.oldValue;
-          logData.newValue = target.textContent;
-          logCharacterDataMutation(logData);
-          break;
-      }
-
-      // Store in log with size limit
-      mutationLog.push(logData);
-      if (mutationLog.length > CONFIG.maxLogEntries) {
-        mutationLog.shift();
+      try {
+        processMutation(mutation);
+      } catch (error) {
+        console.error("Failed to process DOM mutation:", mutation, error);
       }
     });
   }
