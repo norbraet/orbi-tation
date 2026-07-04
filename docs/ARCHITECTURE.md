@@ -14,27 +14,27 @@ decision.
 - Make npm imports side-effect-free and safe in non-browser build pipelines.
 - Emit bounded, serializable events instead of exposing native
   `MutationRecord` objects.
-- Preserve the current copy-paste snippet workflow through an intentional
-  standalone entry.
+- Require explicit initialization so applications own tracker lifecycle and
+  production inclusion.
 - Leave room for filters, structured diffs, redaction, and diagnostics without
   putting those features in the initial contract.
 
 ## Module boundaries
 
-The maintained source is split into three layers:
+The maintained source has two one-way layers and a side-effect-free package
+entry:
 
 ```text
-src/standalone.ts ──> src/panel/ ──> src/core/
-        │                              ▲
-        └──────────────────────────────┘
+src/index.ts ───────────────> src/core/
+src/panel/ ─────────────────> src/core/
 ```
 
 ### Core
 
 `src/core/` owns observation, lifecycle state, event normalization, bounded
 history, deduplication, selectors, and subscriptions. It may use browser DOM
-APIs, but it must not import the panel or standalone entry. It has no runtime
-dependency on a UI framework.
+APIs, but it must not import the panel. It has no runtime dependency on a UI
+framework.
 
 ### Panel
 
@@ -47,15 +47,8 @@ The panel will render into an **open ShadowRoot**. Shadow DOM provides style
 isolation, while an open root keeps accessibility inspection, automated tests,
 and host-page debugging practical. The root is not a security boundary.
 
-### Standalone
-
-`src/standalone.ts` is the only entry allowed to perform work at module
-evaluation time. It creates the default tracker and presentation layer,
-publishes the browser global API, and starts tracking. This is the entry used
-for the IIFE/DevTools snippet build.
-
-The dependency direction is one-way: standalone may import panel and core;
-panel may import core; core imports neither.
+The dependency direction is one-way: panel may import core; core never imports
+panel. No entry may auto-start tracking or publish browser globals.
 
 ## npm public API
 
@@ -238,45 +231,17 @@ If no `onError` callback is configured, the default reporter uses
 `console.error`. If the error callback itself throws, that exception is
 re-thrown asynchronously so it is visible without aborting the observer batch.
 
-## Standalone compatibility contract
-
-The IIFE build intentionally auto-starts after evaluation and exposes one
-namespaced global:
-
-```ts
-interface DOMMutationTrackerGlobal {
-  readonly tracker: Tracker;
-  start(): void;
-  stop(): void;
-  clear(): void;
-  getEvents(): readonly TrackerMutationEvent[];
-  subscribe(listener: TrackerEventListener): () => void;
-}
-
-window.DOMMutationTracker: DOMMutationTrackerGlobal;
-```
-
-The following existing globals remain as compatibility aliases during v2:
-
-- `startMutationTracker()` delegates to `DOMMutationTracker.start()`.
-- `stopMutationTracker()` delegates to `DOMMutationTracker.stop()`.
-- `clearMutationLog()` delegates to `DOMMutationTracker.clear()`.
-- `getMutationLog()` delegates to `DOMMutationTracker.getEvents()` and keeps
-  the current console presentation in the standalone layer.
-
-The aliases are deprecated for npm usage but remain available in v2. This keeps
-saved DevTools snippets working while establishing one extensible global.
-
 ## Packaging and compatibility decisions
 
-- The package ships ESM, CJS, declaration, source-map, and standalone IIFE
-  outputs.
+- The package ships ESM, CJS, declaration, and source-map outputs.
 - ESM is the primary documented npm format. CJS is supported for v2 and may be
   reconsidered only in a future major version.
-- Package modules target ES2022. The IIFE targets current evergreen Chrome,
-  Firefox, Safari, and Edge releases that support `MutationObserver`.
-- npm entry points are marked side-effect-free. Only the explicit standalone
-  entry is side-effectful.
+- Package modules target ES2022 and current evergreen browsers that support
+  `MutationObserver`.
+- Every package entry is side-effect-free. Consumers explicitly create, mount,
+  start, stop, and unmount the features they use.
+- Auto-starting global bundles and browser globals are deliberate non-goals so
+  the package has one lifecycle and integration model.
 - The core has no runtime dependency unless a later issue documents a concrete
   browser-platform gap that cannot reasonably be handled internally.
 - Advanced diagnostics, stack capture, screenshots, and framework adapters are

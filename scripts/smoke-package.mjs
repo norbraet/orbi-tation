@@ -32,8 +32,6 @@ try {
     "dist/panel.js",
     "dist/panel.cjs",
     "dist/panel.d.ts",
-    "dist/standalone.iife.js",
-    "dist/standalone.iife.js.map",
     "package.json",
     "src/index.ts",
   ];

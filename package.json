@@ -1,7 +1,7 @@
 {
   "name": "dom-mutation-tracker",
   "version": "1.0.0",
-  "description": "A typed, framework-agnostic DOM mutation tracker for npm and Chrome DevTools snippets.",
+  "description": "A typed, framework-agnostic DOM mutation tracker for development workflows.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -29,7 +29,6 @@
       },
       "default": "./dist/panel.js"
     },
-    "./standalone": "./dist/standalone.iife.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -38,9 +37,7 @@
     "LICENSE",
     "README.md"
   ],
-  "sideEffects": [
-    "./dist/standalone.iife.js"
-  ],
+  "sideEffects": false,
   "browserslist": [
     "last 2 Chrome versions",
     "last 2 Firefox versions",

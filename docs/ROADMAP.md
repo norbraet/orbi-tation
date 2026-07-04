@@ -2,9 +2,9 @@
 
 ## Vision
 
-Turn `dom-mutation-tracker` from a copy-paste Chrome DevTools snippet into a
-framework-agnostic frontend debugging tool that can be installed as a
-development dependency without losing the standalone snippet workflow.
+Build `dom-mutation-tracker` as a framework-agnostic frontend debugging tool
+installed as a development dependency and initialized explicitly by the host
+application.
 
 The product should help a developer answer:
 
@@ -21,8 +21,8 @@ The product should help a developer answer:
 
 - The core is framework-agnostic and does not depend on the panel.
 - npm imports are explicit and side-effect-free.
-- The standalone IIFE intentionally supports the existing auto-start and global
-  control workflow.
+- Applications own initialization and cleanup; the package does not auto-start
+  or publish browser globals.
 - Installing the package as a `devDependency` is not treated as production
   protection. Production exclusion must be documented and tested.
 - Tracker UI and highlighting must not pollute the mutation stream.
@@ -35,17 +35,14 @@ The product should help a developer answer:
 
 The public contract is recorded in the
 [v2 architecture and public API decision](ARCHITECTURE.md). The product is
-separated into three layers with one-way dependencies:
+separated into two layers with one-way dependencies:
 
 1. **Core engine** — observes DOM mutations and emits normalized, serializable
    events.
 2. **Panel** — subscribes to the core and renders the debugging experience in
    an isolated Shadow DOM.
-3. **Standalone entry** — bundles the core and panel for DevTools snippets and
-   bookmarklets, with a documented global API.
 
-Importing the npm package must not start an observer or modify the page. The
-standalone build may intentionally auto-start to preserve the current workflow.
+Importing any package entry must not start an observer or modify the page.
 
 ## Milestone strategy
 
@@ -62,13 +59,12 @@ Recommended order:
 1. #22 — architecture, lifecycle API, and event model
 2. #3 and #24 — unit and browser test harnesses
 3. #1 — SVG selector regression fix
-4. #2 — TypeScript package and ESM/CJS/IIFE builds
+4. #2 — TypeScript package and ESM/CJS builds
 5. #23 and #27 — production safety and performance budgets
 6. #4 — complete CI gate
 
-Exit gate: the side-effect-free typed package builds successfully, the IIFE
-workflow remains supported, tests and CI pass, and production/performance
-expectations are verified.
+Exit gate: the side-effect-free typed package builds successfully, tests and CI
+pass, and production/performance expectations are verified.
 
 ### [M2 — Panel MVP & First npm Release](https://github.com/norbraet/dom-mutation-tracker/milestone/2)
 
@@ -84,7 +80,7 @@ Recommended order:
 5. #10 and #28 — locate behavior and safe serialization
 6. #11 and #15 — structured diffs and burst grouping
 7. #7 — versioned JSON export
-8. #25 — npm/snippet documentation and example app
+8. #25 — npm documentation and example app
 9. #26 — validated first npm release
 
 Exit gate: developers can install the package, open an isolated panel, inspect
@@ -119,7 +115,7 @@ documented no-go decision is a valid completion.
 
 ## Decisions already made
 
-- Ship package entries and a standalone IIFE build.
+- Ship side-effect-free ESM and CJS package entries only.
 - Keep the core framework-agnostic.
 - Use structured DOM diffs as the default snapshot approach.
 - Defer rasterized thumbnails until their value and cost are demonstrated.
@@ -133,10 +129,8 @@ The accepted #22 decision defines:
 
 - `createTracker(options)` and the tracker lifecycle methods.
 - A serializable `TrackerMutationEvent` discriminated union.
-- A namespaced standalone global, intentional IIFE auto-start, and legacy
-  compatibility aliases.
-- ES2022 package modules, evergreen-browser IIFE support, and CJS support for
-  v2.
+- Explicit initialization with no auto-start or browser globals.
+- ES2022 package modules and CJS support for v2.
 - A default 100-event limit with advanced diagnostics kept opt-in.
 - An open ShadowRoot for panel isolation, accessibility inspection, and
   testability.
@@ -146,8 +140,7 @@ The accepted #22 decision defines:
 A frontend developer can install the package for local development, initialize
 it explicitly, open an isolated panel, filter and inspect bounded mutation
 events with useful diffs, locate affected elements, and exclude the tool from a
-production build using a documented and tested pattern. The same core experience
-remains available as a standalone DevTools snippet.
+production build using a documented and tested pattern.
 
 ## Planning sources
 

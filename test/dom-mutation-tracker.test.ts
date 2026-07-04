@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { JSDOM } from "jsdom";
 
@@ -16,19 +15,6 @@ import { createPanel } from "../dist/panel.js";
 interface Harness {
   readonly dom: JSDOM;
   readonly tracker: Tracker;
-}
-
-interface StandaloneWindow extends Window {
-  DOMMutationTracker: {
-    start(): void;
-    stop(): void;
-    clear(): void;
-    getEvents(): readonly TrackerMutationEvent[];
-  };
-  startMutationTracker(): void;
-  stopMutationTracker(): void;
-  clearMutationLog(): void;
-  getMutationLog(): readonly TrackerMutationEvent[];
 }
 
 function createHarness(
@@ -333,48 +319,4 @@ test("panel presentation highlights, logs, and cleans up deterministically", asy
     0,
   );
   closeHarness(harness);
-});
-
-test("standalone IIFE auto-starts and preserves the global snippet API", async () => {
-  const source = await readFile(
-    new URL("../dist/standalone.iife.js", import.meta.url),
-    "utf8",
-  );
-  const dom = new JSDOM('<!doctype html><body><div id="target"></div></body>', {
-    runScripts: "outside-only",
-  });
-  const window = dom.window as unknown as StandaloneWindow;
-  dom.window.setTimeout = (() => 0) as unknown as typeof dom.window.setTimeout;
-  Object.assign(dom.window.console, {
-    group() {},
-    groupCollapsed() {},
-    groupEnd() {},
-    log() {},
-  });
-
-  dom.window.eval(source);
-  assert.ok(window.DOMMutationTracker);
-  assert.equal(
-    dom.window.document.querySelectorAll("style[data-mutation-tracker]").length,
-    1,
-  );
-
-  requireElement(dom.window.document, "#target").setAttribute(
-    "data-state",
-    "changed",
-  );
-  await flushMutations();
-  assert.equal(window.DOMMutationTracker.getEvents().length, 1);
-  assert.equal(window.getMutationLog().length, 1);
-
-  window.clearMutationLog();
-  assert.equal(window.DOMMutationTracker.getEvents().length, 0);
-  window.stopMutationTracker();
-  assert.equal(
-    dom.window.document.querySelectorAll("style[data-mutation-tracker]").length,
-    0,
-  );
-  window.startMutationTracker();
-  window.stopMutationTracker();
-  dom.window.close();
 });
