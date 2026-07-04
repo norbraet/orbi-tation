@@ -2,8 +2,7 @@
 export default {
   semi: false,
   singleQuote: true,
-  quoteProps: "as-needed",
-  trailingComma: "es5",
+  trailingComma: "all",
   tabWidth: 2,
   useTabs: false,
   printWidth: 100,

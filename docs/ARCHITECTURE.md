@@ -129,9 +129,7 @@ The name `TrackerMutationEvent` intentionally avoids the browser's legacy
 
 ```ts
 export type TrackerMutationEvent =
-  | TrackerAttributeEvent
-  | TrackerChildListEvent
-  | TrackerCharacterDataEvent;
+  TrackerAttributeEvent | TrackerChildListEvent | TrackerCharacterDataEvent;
 
 export interface TrackerEventBase {
   sequence: number;

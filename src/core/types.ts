@@ -52,9 +52,7 @@ export interface TrackerCharacterDataEvent extends TrackerEventBase {
 }
 
 export type TrackerMutationEvent =
-  | TrackerAttributeEvent
-  | TrackerChildListEvent
-  | TrackerCharacterDataEvent;
+  TrackerAttributeEvent | TrackerChildListEvent | TrackerCharacterDataEvent;
 
 export type TrackerEventListener = (event: TrackerMutationEvent) => void;
 
