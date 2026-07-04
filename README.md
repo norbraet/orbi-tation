@@ -1,10 +1,8 @@
 # DOM Mutation Tracker
 
 A framework-agnostic debugging utility that records DOM mutations as typed,
-serializable events. Use the side-effect-free npm API in an application or the
-auto-starting IIFE bundle as a Chrome DevTools snippet.
+serializable events through an explicit, side-effect-free package API.
 
-![Chrome DevTools Compatible](https://img.shields.io/badge/Chrome%20DevTools-Compatible-green)
 ![Zero Runtime Dependencies](https://img.shields.io/badge/Runtime%20Dependencies-0-blue)
 ![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue)
 
@@ -14,7 +12,6 @@ auto-starting IIFE bundle as a Chrome DevTools snippet.
 - Serializable events without native DOM nodes or `MutationRecord` objects
 - Strict TypeScript types and declaration maps
 - Side-effect-free ESM and CommonJS package entries
-- Browser-ready IIFE bundle with intentional auto-start
 - Console presentation and visual highlighting
 - Bounded history, deduplication, subscriptions, and explicit lifecycle control
 - Zero runtime dependencies
@@ -64,41 +61,6 @@ tracker.start();
 tracker.stop();
 panel.unmount();
 ```
-
-## Chrome DevTools snippet
-
-The standalone IIFE intentionally mounts the presentation, starts tracking,
-and exposes browser globals when evaluated.
-
-From a repository checkout:
-
-```bash
-npm install
-npm run build
-```
-
-Copy `dist/standalone.iife.js` into a DevTools snippet and run it. The same file
-is included in the npm package at
-`node_modules/dom-mutation-tracker/dist/standalone.iife.js`.
-
-The namespaced global is the preferred standalone API:
-
-```js
-DOMMutationTracker.stop();
-DOMMutationTracker.start();
-DOMMutationTracker.clear();
-DOMMutationTracker.getEvents();
-DOMMutationTracker.subscribe((event) => console.log(event));
-```
-
-The v1 globals remain as compatibility aliases:
-
-| Function                 | Description                                 |
-| ------------------------ | ------------------------------------------- |
-| `startMutationTracker()` | Start or resume tracking and presentation   |
-| `stopMutationTracker()`  | Stop tracking and remove presentation       |
-| `getMutationLog()`       | Log and return the normalized event history |
-| `clearMutationLog()`     | Clear event history and deduplication state |
 
 ## Core API
 
@@ -154,7 +116,6 @@ contract and module boundaries.
 
 - `dist/index.js` and `dist/index.cjs` — side-effect-free core entry
 - `dist/panel.js` and `dist/panel.cjs` — optional presentation entry
-- `dist/standalone.iife.js` — auto-starting browser/DevTools bundle
 - `.d.ts`, `.d.cts`, declaration maps, and JavaScript source maps
 - `src/` — TypeScript sources referenced by declaration maps
 
@@ -185,8 +146,8 @@ and ESM/CommonJS smoke imports.
 
 ## Browser compatibility
 
-The IIFE targets the latest two releases of Chrome, Firefox, Safari, and Edge.
-Internet Explorer is not supported.
+The package targets the latest two releases of Chrome, Firefox, Safari, and
+Edge. Internet Explorer is not supported.
 
 ## Roadmap
 
