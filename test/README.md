@@ -34,4 +34,4 @@ Issue #24 owns behavior that jsdom cannot validate with enough confidence:
 - traces and screenshots captured on browser-test failure
 
 The unit suite may model these boundaries, but browser compatibility claims
-must come from the end-to-end harness.
+must come from the [Playwright end-to-end harness](browser/README.md).

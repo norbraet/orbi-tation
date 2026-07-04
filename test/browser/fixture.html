@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM Mutation Tracker browser fixture</title>
+  </head>
+  <body>
+    <nav aria-label="Tracker controls">
+      <button type="button" data-action="start">Start</button>
+      <button type="button" data-action="stop">Stop</button>
+      <button type="button" data-action="clear">Clear</button>
+      <button type="button" data-action="mount-panel">Mount panel</button>
+      <button type="button" data-action="unmount-panel">Unmount panel</button>
+    </nav>
+
+    <nav aria-label="Mutation controls">
+      <button type="button" data-action="attribute">Attribute mutation</button>
+      <button type="button" data-action="child">Child mutation</button>
+      <button type="button" data-action="text">Text mutation</button>
+      <button type="button" data-action="svg">SVG mutation</button>
+      <button type="button" data-action="shadow">Shadow mutation</button>
+    </nav>
+
+    <main id="fixture-root">
+      <div id="attribute-target" class="card primary">Attribute target</div>
+      <ul id="child-target"></ul>
+      <p id="text-target">before</p>
+      <svg id="svg-target" class="diagram" aria-label="SVG target">
+        <circle
+          id="svg-child"
+          class="shape selected"
+          cx="10"
+          cy="10"
+          r="5"
+        ></circle>
+      </svg>
+      <div id="shadow-host"></div>
+    </main>
+
+    <pre id="events" aria-label="Recorded events">[]</pre>
+
+    <script type="module">
+      import { createTracker } from "/dist/index.js";
+      import { createPanel } from "/dist/panel.js";
+
+      const root = document.querySelector("#fixture-root");
+      const events = document.querySelector("#events");
+      const shadowHost = document.querySelector("#shadow-host");
+      const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+      const shadowTarget = document.createElement("span");
+      shadowTarget.id = "shadow-target";
+      shadowTarget.textContent = "shadow";
+      shadowRoot.appendChild(shadowTarget);
+
+      const tracker = createTracker({ root, dedupeWindowMs: 0 });
+      const panel = createPanel(tracker, {
+        document,
+        highlightDuration: 100,
+        console: {
+          groupCollapsed() {},
+          groupEnd() {},
+          log() {},
+        },
+      });
+      const counters = {
+        attribute: 0,
+        child: 0,
+        text: 0,
+        svg: 0,
+        shadow: 0,
+      };
+
+      function renderEvents() {
+        events.textContent = JSON.stringify(tracker.getEvents());
+      }
+
+      tracker.subscribe(renderEvents);
+
+      const actions = {
+        start() {
+          tracker.start();
+        },
+        stop() {
+          tracker.stop();
+        },
+        clear() {
+          tracker.clear();
+          renderEvents();
+        },
+        "mount-panel"() {
+          panel.mount();
+        },
+        "unmount-panel"() {
+          panel.unmount();
+        },
+        attribute() {
+          counters.attribute += 1;
+          document
+            .querySelector("#attribute-target")
+            .setAttribute("data-state", String(counters.attribute));
+        },
+        child() {
+          counters.child += 1;
+          const item = document.createElement("li");
+          item.textContent = `item-${counters.child}`;
+          document.querySelector("#child-target").appendChild(item);
+        },
+        text() {
+          counters.text += 1;
+          document.querySelector("#text-target").firstChild.textContent =
+            `text-${counters.text}`;
+        },
+        svg() {
+          counters.svg += 1;
+          document
+            .querySelector("#svg-child")
+            .setAttribute("data-state", String(counters.svg));
+        },
+        shadow() {
+          counters.shadow += 1;
+          shadowTarget.setAttribute("data-state", String(counters.shadow));
+        },
+      };
+
+      document.addEventListener("click", (event) => {
+        const action =
+          event.target instanceof Element
+            ? event.target.closest("[data-action]")?.dataset.action
+            : undefined;
+        if (action) actions[action]();
+      });
+
+      document.body.dataset.fixtureReady = "true";
+    </script>
+  </body>
+</html>

@@ -129,11 +129,13 @@ npm run format
 npm run format:check
 npm run typecheck
 npm test
+npm run test:browser:install
+npm run test:browser
 npm run test:package
 ```
 
 `npm run verify` runs strict type-checking, unit tests, builds, package packing,
-and ESM/CommonJS smoke imports.
+ESM/CommonJS smoke imports, and the focused Chromium integration suite.
 
 ## Limitations
 
