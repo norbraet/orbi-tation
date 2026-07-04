@@ -13,7 +13,7 @@ async function createBundle(isDevelopment) {
     target: "es2022",
     define: { "import.meta.env.DEV": String(isDevelopment) },
     deps: {
-      alwaysBundle: [/^dom-mutation-tracker(?:\/panel)?$/],
+      alwaysBundle: [/^orbi-tation(?:\/panel)?$/],
       onlyBundle: false,
     },
     clean: false,
@@ -46,7 +46,7 @@ assert.match(developmentBundle, /mutation-tracker-highlight/);
 assert.match(productionBundle, /host-application/);
 assert.doesNotMatch(productionBundle, /MutationObserver/);
 assert.doesNotMatch(productionBundle, /mutation-tracker-highlight/);
-assert.doesNotMatch(productionBundle, /dom-mutation-tracker/);
+assert.doesNotMatch(productionBundle, /orbi-tation/);
 
 console.log(
   `Production guard removed tracker code (${developmentBundle.length} bytes development; ${productionBundle.length} bytes production).`,
