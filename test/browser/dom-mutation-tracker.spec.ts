@@ -16,7 +16,7 @@ interface BrowserEvent {
 async function recordedEvents(page: Page): Promise<BrowserEvent[]> {
   return JSON.parse(
     (await page.getByLabel("Recorded events").textContent()) ?? "[]",
-  );
+  ) as BrowserEvent[];
 }
 
 test.beforeEach(async ({ page }) => {

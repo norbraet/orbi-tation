@@ -44,7 +44,7 @@ async function flushMutations(): Promise<void> {
   await new Promise<void>((resolve) => setImmediate(resolve));
 }
 
-test("generates useful selectors and descriptions for HTML, SVG, and text", () => {
+void test("generates useful selectors and descriptions for HTML, SVG, and text", () => {
   const dom = new JSDOM(`<!doctype html><body>
     <div id="normal" class="card primary"><span>text</span></div>
     <svg id="icon:main" class="diagram state:on">
@@ -80,7 +80,7 @@ test("generates useful selectors and descriptions for HTML, SVG, and text", () =
   dom.window.close();
 });
 
-test("normalizes serializable attribute, child-list, and character-data events in order", async () => {
+void test("normalizes serializable attribute, child-list, and character-data events in order", async () => {
   const harness = createHarness(
     '<div id="attribute"></div><ul id="list"></ul><p id="text">before</p>',
     { dedupeWindowMs: 0 },
@@ -132,7 +132,7 @@ test("normalizes serializable attribute, child-list, and character-data events i
   closeHarness(harness);
 });
 
-test("deduplicates records inside the configured time window", async (t) => {
+void test("deduplicates records inside the configured time window", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: 1_000 });
   const harness = createHarness('<div id="target"></div>');
   const target = requireElement(harness.dom.window.document, "#target");
@@ -155,7 +155,7 @@ test("deduplicates records inside the configured time window", async (t) => {
   closeHarness(harness);
 });
 
-test("keeps the configured number of newest events", async () => {
+void test("keeps the configured number of newest events", async () => {
   const harness = createHarness('<div id="target"></div>', {
     maxEvents: 3,
     dedupeWindowMs: 0,
@@ -179,7 +179,7 @@ test("keeps the configured number of newest events", async () => {
   closeHarness(harness);
 });
 
-test("start, stop, restart, clear, and subscriptions are idempotent", async () => {
+void test("start, stop, restart, clear, and subscriptions are idempotent", async () => {
   const dom = new JSDOM('<!doctype html><body><div id="target"></div></body>');
   const tracker = createTracker({
     root: dom.window.document.body,
@@ -223,7 +223,7 @@ test("start, stop, restart, clear, and subscriptions are idempotent", async () =
   dom.window.close();
 });
 
-test("isolates record and listener failures without stopping later events", async () => {
+void test("isolates record and listener failures without stopping later events", async () => {
   const dom = new JSDOM(
     '<!doctype html><body><div id="unusual"></div><div id="later"></div></body>',
   );
@@ -258,7 +258,7 @@ test("isolates record and listener failures without stopping later events", asyn
   dom.window.close();
 });
 
-test("validates options and fails explicitly without a DOM root", () => {
+void test("validates options and fails explicitly without a DOM root", () => {
   assert.throws(() => createTracker({ maxEvents: 0 }), RangeError);
   assert.throws(() => createTracker({ dedupeWindowMs: -1 }), RangeError);
   assert.throws(() => createTracker({ root: {} as Node }), TypeError);
@@ -270,19 +270,13 @@ test("validates options and fails explicitly without a DOM root", () => {
   );
 });
 
-test("panel presentation highlights, logs, and cleans up deterministically", async (t) => {
+void test("panel presentation highlights, logs, and cleans up deterministically", async (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const harness = createHarness('<div id="target"></div>');
   const { document } = harness.dom.window;
-  harness.dom.window.setTimeout = ((callback: () => void, delay?: number) =>
-    setTimeout(
-      callback,
-      delay,
-    )) as unknown as typeof harness.dom.window.setTimeout;
-  harness.dom.window.clearTimeout = ((timer: number) =>
-    clearTimeout(
-      timer as unknown as ReturnType<typeof setTimeout>,
-    )) as typeof harness.dom.window.clearTimeout;
+  harness.dom.window.setTimeout = (callback: () => void, delay?: number) =>
+    setTimeout(callback, delay);
+  harness.dom.window.clearTimeout = (timer: number) => clearTimeout(timer);
   const groups: string[] = [];
   const panel = createPanel(harness.tracker, {
     document,
