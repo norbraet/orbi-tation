@@ -94,12 +94,40 @@ try {
       panelPackage.createPanel(tracker);
     `,
   );
+  await writeFile(
+    `${consumerDirectory}.side-effects.mjs`,
+    `
+      let observerCount = 0;
+      globalThis.MutationObserver = class {
+        constructor() {
+          observerCount += 1;
+        }
+      };
+      Object.defineProperty(globalThis, "document", {
+        configurable: true,
+        get() {
+          throw new Error("Package import accessed document");
+        },
+      });
+
+      await import("dom-mutation-tracker");
+      await import("dom-mutation-tracker/panel");
+
+      if (observerCount !== 0) throw new Error("Package import started an observer");
+      if (globalThis.DOMMutationTracker !== undefined) throw new Error("Package import exposed a browser global");
+      if (globalThis.domMutationTracker !== undefined) throw new Error("Package import exposed a browser global");
+    `,
+  );
 
   execFileSync(process.execPath, [`${consumerDirectory}.mjs`], {
     cwd: temporaryDirectory,
     stdio: "pipe",
   });
   execFileSync(process.execPath, [`${consumerDirectory}.cjs`], {
+    cwd: temporaryDirectory,
+    stdio: "pipe",
+  });
+  execFileSync(process.execPath, [`${consumerDirectory}.side-effects.mjs`], {
     cwd: temporaryDirectory,
     stdio: "pipe",
   });
@@ -130,9 +158,15 @@ try {
       "utf8",
     ),
   );
+  assert.equal(installedPackage.sideEffects, false);
+  assert.deepEqual(Object.keys(installedPackage.exports).sort(), [
+    ".",
+    "./package.json",
+    "./panel",
+  ]);
   assert.deepEqual(installedPackage.dependencies ?? {}, {});
   console.log(
-    `Packed ${packagedFiles.size} files; ESM/CJS runtime and type smoke tests passed.`,
+    `Packed ${packagedFiles.size} files; entries are side-effect-free and ESM/CJS runtime and type smoke tests passed.`,
   );
 } finally {
   await rm(temporaryDirectory, { recursive: true, force: true });

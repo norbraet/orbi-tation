@@ -242,6 +242,13 @@ re-thrown asynchronously so it is visible without aborting the observer batch.
   start, stop, and unmount the features they use.
 - Auto-starting global bundles and browser globals are deliberate non-goals so
   the package has one lifecycle and integration model.
+- Development-only integration uses a compile-time host-application guard
+  around dynamic package imports. A production build fixture verifies that
+  both core and panel code are removed when that guard is `false`.
+- The package does not infer whether the host is running in production. An
+  explicitly imported and started tracker remains usable in any environment;
+  this keeps the core bundler-neutral and makes production exclusion the host
+  build's deliberate responsibility.
 - The core has no runtime dependency unless a later issue documents a concrete
   browser-platform gap that cannot reasonably be handled internally.
 - Advanced diagnostics, stack capture, screenshots, and framework adapters are
@@ -257,4 +264,3 @@ The following are intentionally owned by later issues:
 - structured before/after diffs (#11)
 - stack attribution (#12)
 - safe serialization and redaction defaults (#28)
-- production integration guidance (#23)

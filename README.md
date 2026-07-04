@@ -39,6 +39,39 @@ unsubscribe();
 tracker.stop();
 ```
 
+## Development-only integration
+
+Installing the package as a `devDependency` does not by itself keep it out of a
+production browser bundle. Guard a lazy import with a compile-time development
+constant so the production build can remove the import and tracker code:
+
+```ts
+if (import.meta.env.DEV) {
+  void Promise.all([
+    import("dom-mutation-tracker"),
+    import("dom-mutation-tracker/panel"),
+  ]).then(([{ createTracker }, { createPanel }]) => {
+    const tracker = createTracker();
+    const panel = createPanel(tracker);
+
+    panel.mount();
+    tracker.start();
+  });
+}
+```
+
+`import.meta.env.DEV` is the Vite-style spelling. Other bundlers should replace
+an equivalent compile-time constant with `false` in production. Keep the guard
+directly around the dynamic import so dead-code elimination can remove the
+entire chunk; a runtime-only setting cannot provide that guarantee.
+
+The package does not inspect the host application's environment. If production
+code explicitly imports and starts a tracker, it will run. This explicit-opt-in
+behavior keeps the core bundler-neutral and avoids unreliable environment
+detection; production exclusion therefore remains the host build's
+responsibility. Every public entry is side-effect-free, no entry auto-starts,
+and no browser global is exposed as an alternate initialization path.
+
 ## Console and highlight presentation
 
 The optional panel entry owns presentation behavior so the core remains free of
@@ -132,10 +165,12 @@ npm test
 npm run test:browser:install
 npm run test:browser
 npm run test:package
+npm run test:production
 ```
 
 `npm run verify` runs strict type-checking, unit tests, builds, package packing,
-ESM/CommonJS smoke imports, and the focused Chromium integration suite.
+ESM/CommonJS smoke imports, the focused Chromium integration suite, and a
+production tree-shaking fixture that verifies guarded imports are removed.
 
 ## Limitations
 

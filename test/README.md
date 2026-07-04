@@ -21,6 +21,14 @@ Every bug fix should add or extend a focused unit regression here. Tests for
 new event fields, options, filters, and lifecycle behavior should land with the
 feature that introduces them.
 
+## Package and production-build checks
+
+`npm run test:package` installs the packed tarball and verifies ESM, CommonJS,
+types, public entries, side-effect metadata, and import-time behavior.
+`npm run test:production` bundles the guarded core and panel imports twice and
+proves that the production build retains the host application while removing
+all tracker code.
+
 ## Intentionally left to browser tests
 
 Issue #24 owns behavior that jsdom cannot validate with enough confidence:

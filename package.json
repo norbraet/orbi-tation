@@ -51,10 +51,11 @@
     "test:browser": "npm run build && playwright test",
     "test:browser:install": "playwright install chromium",
     "test:package": "npm run build && node scripts/smoke-package.mjs",
+    "test:production": "npm run build && node scripts/verify-production-exclusion.mjs",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "npm run typecheck && npm test && npm run test:browser && npm run test:package",
+    "verify": "npm run typecheck && npm test && npm run test:browser && npm run test:package && npm run test:production",
     "prepack": "npm run build"
   },
   "repository": {
