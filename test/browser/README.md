@@ -22,3 +22,16 @@ entry provides console/highlight presentation only.
 
 Firefox and WebKit projects should be added after the Chromium suite is stable
 and CI runtime is measured in #27.
+
+## Performance benchmarks
+
+Run the separate informational benchmark suite with:
+
+```bash
+npm run --silent benchmark
+```
+
+It reuses this static server and Chromium installation but emits JSON instead
+of test-runner output. Timing and memory budgets are documented in
+[the performance baseline](../../docs/PERFORMANCE.md); shared CI does not fail
+on machine-speed thresholds.

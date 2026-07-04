@@ -2,7 +2,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -15,7 +15,7 @@ const contentTypes = new Map([
   [".map", "application/json; charset=utf-8"],
 ]);
 
-createServer(async (request, response) => {
+async function handleRequest(request, response) {
   const pathname = decodeURIComponent(
     new URL(request.url ?? "/", "http://localhost").pathname,
   );
@@ -39,4 +39,21 @@ createServer(async (request, response) => {
   } catch {
     response.writeHead(404).end("Not found");
   }
-}).listen(port, "127.0.0.1");
+}
+
+export function startFixtureServer({ host = "127.0.0.1", port = 4173 } = {}) {
+  const server = createServer(handleRequest);
+
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, host, () => resolve(server));
+  });
+}
+
+const executedPath = process.argv[1]
+  ? pathToFileURL(path.resolve(process.argv[1])).href
+  : null;
+
+if (import.meta.url === executedPath) {
+  await startFixtureServer({ port });
+}

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DOM Mutation Tracker benchmark fixture</title>
+  </head>
+  <body>
+    <main id="benchmark-root"></main>
+
+    <script type="module">
+      import { createTracker } from "/dist/index.js";
+      import { createPanel } from "/dist/panel.js";
+
+      const root = document.querySelector("#benchmark-root");
+
+      function serializedSize(events) {
+        return new TextEncoder().encode(JSON.stringify(events)).byteLength;
+      }
+
+      async function measureBatch({
+        targetRoot,
+        mutationCount,
+        mutate,
+        maxEvents = mutationCount,
+        withPanel = false,
+      }) {
+        const tracker = createTracker({
+          root: targetRoot,
+          dedupeWindowMs: 0,
+          maxEvents,
+        });
+        const panel = withPanel
+          ? createPanel(tracker, {
+              document,
+              highlightDuration: 0,
+              console: {
+                groupCollapsed() {},
+                groupEnd() {},
+                log() {},
+              },
+            })
+          : null;
+        let delivered = 0;
+        let resolveDelivery;
+        const delivery = new Promise((resolve) => {
+          resolveDelivery = resolve;
+        });
+
+        panel?.mount();
+        tracker.subscribe(() => {
+          delivered += 1;
+          if (delivered === mutationCount) resolveDelivery();
+        });
+        tracker.start();
+
+        const startedAt = performance.now();
+        await mutate();
+        await delivery;
+        const durationMs = performance.now() - startedAt;
+        const events = tracker.getEvents();
+
+        tracker.stop();
+        panel?.unmount();
+
+        return {
+          durationMs,
+          mutationCount,
+          millisecondsPerMutation: durationMs / mutationCount,
+          deliveredEventCount: delivered,
+          retainedEventCount: events.length,
+          retainedSerializedBytes: serializedSize(events),
+        };
+      }
+
+      async function lowVolume() {
+        const target = document.createElement("div");
+        root.appendChild(target);
+        const mutationCount = 25;
+        const tracker = createTracker({
+          root,
+          dedupeWindowMs: 0,
+          maxEvents: mutationCount,
+        });
+        const latencies = [];
+        let resolveCurrent;
+
+        tracker.subscribe(() => resolveCurrent?.());
+        tracker.start();
+
+        for (let index = 0; index < mutationCount; index += 1) {
+          const delivered = new Promise((resolve) => {
+            resolveCurrent = resolve;
+          });
+          const startedAt = performance.now();
+          target.setAttribute("data-state", String(index));
+          await delivered;
+          latencies.push(performance.now() - startedAt);
+        }
+
+        const events = tracker.getEvents();
+        tracker.stop();
+
+        return {
+          mutationCount,
+          averageLatencyMs:
+            latencies.reduce((total, value) => total + value, 0) /
+            latencies.length,
+          maximumLatencyMs: Math.max(...latencies),
+          retainedEventCount: events.length,
+          retainedSerializedBytes: serializedSize(events),
+        };
+      }
+
+      async function burstyUpdates() {
+        const container = document.createElement("section");
+        const rows = Array.from({ length: 200 }, (_, index) => {
+          const row = document.createElement("div");
+          row.textContent = `row-${index}`;
+          container.appendChild(row);
+          return row;
+        });
+        root.appendChild(container);
+
+        return measureBatch({
+          targetRoot: container,
+          mutationCount: rows.length * 3,
+          mutate() {
+            for (const [index, row] of rows.entries()) {
+              row.classList.add("updated");
+              row.setAttribute("data-index", String(index));
+              row.firstChild.textContent = `updated-${index}`;
+            }
+          },
+        });
+      }
+
+      async function largeSubtree() {
+        const container = document.createElement("section");
+        const leaves = [];
+
+        for (let branchIndex = 0; branchIndex < 100; branchIndex += 1) {
+          const branch = document.createElement("div");
+          branch.id = `branch-${branchIndex}`;
+          for (let leafIndex = 0; leafIndex < 10; leafIndex += 1) {
+            const leaf = document.createElement("span");
+            leaf.textContent = `${branchIndex}-${leafIndex}`;
+            branch.appendChild(leaf);
+            leaves.push(leaf);
+          }
+          container.appendChild(branch);
+        }
+        root.appendChild(container);
+
+        return measureBatch({
+          targetRoot: container,
+          mutationCount: leaves.length,
+          mutate() {
+            for (const [index, leaf] of leaves.entries()) {
+              leaf.setAttribute("data-state", String(index));
+            }
+          },
+        });
+      }
+
+      async function longRunning() {
+        const container = document.createElement("section");
+        const targets = Array.from({ length: 100 }, () => {
+          const target = document.createElement("div");
+          container.appendChild(target);
+          return target;
+        });
+        root.appendChild(container);
+        const batchCount = 20;
+        const mutationCount = targets.length * batchCount;
+
+        const result = await measureBatch({
+          targetRoot: container,
+          mutationCount,
+          maxEvents: 200,
+          async mutate() {
+            for (let batch = 0; batch < batchCount; batch += 1) {
+              for (const [index, target] of targets.entries()) {
+                target.setAttribute("data-state", `${batch}-${index}`);
+              }
+              await Promise.resolve();
+            }
+          },
+        });
+
+        return { ...result, batchCount };
+      }
+
+      async function panelPresentation() {
+        const container = document.createElement("section");
+        const targets = Array.from({ length: 200 }, (_, index) => {
+          const target = document.createElement("button");
+          target.id = `panel-target-${index}`;
+          container.appendChild(target);
+          return target;
+        });
+        root.appendChild(container);
+
+        const core = await measureBatch({
+          targetRoot: container,
+          mutationCount: targets.length,
+          mutate() {
+            for (const target of targets) target.toggleAttribute("data-core");
+          },
+        });
+        const panel = await measureBatch({
+          targetRoot: container,
+          mutationCount: targets.length,
+          withPanel: true,
+          mutate() {
+            for (const target of targets) target.toggleAttribute("data-panel");
+          },
+        });
+
+        return {
+          mutationCount: targets.length,
+          coreDurationMs: core.durationMs,
+          panelDurationMs: panel.durationMs,
+          panelOverheadMs: panel.durationMs - core.durationMs,
+          panelOverheadMsPerMutation:
+            (panel.durationMs - core.durationMs) / targets.length,
+          retainedEventCount: panel.retainedEventCount,
+          retainedSerializedBytes: panel.retainedSerializedBytes,
+        };
+      }
+
+      const scenarios = {
+        lowVolume,
+        burstyUpdates,
+        largeSubtree,
+        longRunning,
+        panelPresentation,
+      };
+
+      globalThis.runTrackerBenchmark = (scenario) => {
+        const run = scenarios[scenario];
+        if (!run) throw new Error(`Unknown benchmark scenario: ${scenario}`);
+        return run();
+      };
+      globalThis.benchmarkReady = true;
+    </script>
+  </body>
+</html>
