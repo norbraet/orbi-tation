@@ -57,7 +57,7 @@ git switch -c feature/<issue>-description
 
 - Never merge into main.
 - Never force push.
-- Always create a Pull Request.
+- Only commit, push, or create a Pull Request when the user explicitly requests it. Otherwise, leave verified changes uncommitted on the feature branch.
 
 ---
 
