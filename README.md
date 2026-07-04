@@ -1,4 +1,4 @@
-# DOM Mutation Tracker
+# Orbi-Tation
 
 A framework-agnostic debugging utility that records DOM mutations as typed,
 serializable events through an explicit, side-effect-free package API.
@@ -20,7 +20,7 @@ serializable events through an explicit, side-effect-free package API.
 ## Install
 
 ```bash
-npm install --save-dev dom-mutation-tracker
+pnpm add --save-dev dom-mutation-tracker
 ```
 
 Importing the package does not start an observer or change the page.
@@ -146,7 +146,7 @@ contract and module boundaries.
 
 ## Package outputs
 
-`npm run build` creates:
+`pnpm build` creates:
 
 - `dist/index.js` and `dist/index.cjs` — side-effect-free core entry
 - `dist/panel.js` and `dist/panel.cjs` — optional presentation entry
@@ -154,29 +154,29 @@ contract and module boundaries.
 - `src/` — TypeScript sources referenced by declaration maps
 
 Package contents and both ESM and CommonJS imports are verified from the packed
-tarball by `npm run test:package`.
+tarball by `pnpm test:package`.
 
 ## Development
 
 ```bash
-npm run format
-npm run format:check
-npm run typecheck
-npm test
-npm run test:browser:install
-npm run test:browser
-npm run test:package
-npm run test:production
-npm run --silent benchmark
+pnpm format
+pnpm format:check
+pnpm typecheck
+pnpm test
+pnpm test:browser:install
+pnpm test:browser
+pnpm test:package
+pnpm test:production
+pnpm --silent benchmark
 ```
 
-`npm run verify` runs strict type-checking, unit tests, builds, package packing,
+`pnpm verify` runs strict type-checking, unit tests, builds, package packing,
 ESM/CommonJS smoke imports, the focused Chromium integration suite, and a
 production tree-shaking fixture that verifies guarded imports are removed.
 
 ## Performance
 
-`npm run --silent benchmark` measures low-volume latency, burst processing,
+`pnpm --silent benchmark` measures low-volume latency, burst processing,
 large-subtree updates, bounded long-running sessions, retained heap and event
 payloads, and current panel-presentation overhead in headless Chromium. Results
 are environment-specific and are not enforced as brittle shared-CI thresholds.
