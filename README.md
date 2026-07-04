@@ -20,13 +20,13 @@ serializable events through an explicit, side-effect-free package API.
 ## Install
 
 ```bash
-pnpm add --save-dev dom-mutation-tracker
+pnpm add --save-dev orbi-tation
 ```
 
 Importing the package does not start an observer or change the page.
 
 ```ts
-import { createTracker } from "dom-mutation-tracker";
+import { createTracker } from "orbi-tation";
 
 const tracker = createTracker();
 const unsubscribe = tracker.subscribe((event) => {
@@ -48,16 +48,15 @@ constant so the production build can remove the import and tracker code:
 
 ```ts
 if (import.meta.env.DEV) {
-  void Promise.all([
-    import("dom-mutation-tracker"),
-    import("dom-mutation-tracker/panel"),
-  ]).then(([{ createTracker }, { createPanel }]) => {
-    const tracker = createTracker();
-    const panel = createPanel(tracker);
+  void Promise.all([import("orbi-tation"), import("orbi-tation/panel")]).then(
+    ([{ createTracker }, { createPanel }]) => {
+      const tracker = createTracker();
+      const panel = createPanel(tracker);
 
-    panel.mount();
-    tracker.start();
-  });
+      panel.mount();
+      tracker.start();
+    },
+  );
 }
 ```
 
@@ -79,8 +78,8 @@ The optional panel entry owns presentation behavior so the core remains free of
 UI side effects.
 
 ```ts
-import { createTracker } from "dom-mutation-tracker";
-import { createPanel } from "dom-mutation-tracker/panel";
+import { createTracker } from "orbi-tation";
+import { createPanel } from "orbi-tation/panel";
 
 const tracker = createTracker();
 const panel = createPanel(tracker, {

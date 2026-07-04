@@ -2,7 +2,7 @@
 
 ## Vision
 
-Build `dom-mutation-tracker` as a framework-agnostic frontend debugging tool
+Build `orbi-tation` as a framework-agnostic frontend debugging tool
 installed as a development dependency and initialized explicitly by the host
 application.
 
@@ -49,7 +49,7 @@ Importing any package entry must not start an observer or modify the page.
 Milestones are outcome-based delivery gates, not date buckets. Detailed scope,
 acceptance criteria, and direct dependency links live in the GitHub issues.
 
-### [M1 — Architecture & Package Foundation](https://github.com/norbraet/dom-mutation-tracker/milestone/1)
+### [M1 — Architecture & Package Foundation](https://github.com/norbraet/orbi-tation/milestone/1)
 
 Goal: establish the public API, package structure, tests, production-safe
 integration, and performance baseline required for feature work.
@@ -66,7 +66,7 @@ Recommended order:
 Exit gate: the side-effect-free typed package builds successfully, tests and CI
 pass, and production/performance expectations are verified.
 
-### [M2 — Panel MVP & First npm Release](https://github.com/norbraet/dom-mutation-tracker/milestone/2)
+### [M2 — Panel MVP & First npm Release](https://github.com/norbraet/orbi-tation/milestone/2)
 
 Goal: ship the first useful logging-buddy experience and a validated npm
 release.
@@ -87,7 +87,7 @@ Exit gate: developers can install the package, open an isolated panel, inspect
 and filter bounded mutation events, view useful diffs, locate affected elements,
 export safely, and keep the tracker out of production using a tested pattern.
 
-### [M3 — Attribution & Advanced Diagnostics](https://github.com/norbraet/dom-mutation-tracker/milestone/3)
+### [M3 — Attribution & Advanced Diagnostics](https://github.com/norbraet/orbi-tation/milestone/3)
 
 Goal: deepen diagnostics after the MVP is stable.
 
@@ -102,7 +102,7 @@ Exit gate: advanced features remain bounded, clean up after themselves, meet
 the established performance expectations, and communicate platform limits
 honestly.
 
-### [M4 — Evidence-Gated Extensions](https://github.com/norbraet/dom-mutation-tracker/milestone/4)
+### [M4 — Evidence-Gated Extensions](https://github.com/norbraet/orbi-tation/milestone/4)
 
 Goal: evaluate optional investments only after real MVP usage.
 
@@ -144,8 +144,8 @@ production build using a documented and tested pattern.
 
 ## Planning sources
 
-- [Master roadmap issue #21](https://github.com/norbraet/dom-mutation-tracker/issues/21)
-- [All GitHub issues](https://github.com/norbraet/dom-mutation-tracker/issues)
+- [Master roadmap issue #21](https://github.com/norbraet/orbi-tation/issues/21)
+- [All GitHub issues](https://github.com/norbraet/orbi-tation/issues)
 - This document preserves durable product intent and delivery order.
 - GitHub issues and milestones contain the current task status, acceptance
   criteria, and dependency graph.

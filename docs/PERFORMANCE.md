@@ -1,7 +1,7 @@
 # Performance baseline and budgets
 
 Status: initial baseline established by
-[#27](https://github.com/norbraet/dom-mutation-tracker/issues/27).
+[#27](https://github.com/norbraet/orbi-tation/issues/27).
 
 Performance results are evidence for engineering decisions, not promises that
 every host page or machine will produce the same numbers. Run the benchmark on
@@ -19,7 +19,7 @@ npm run --silent benchmark
 Redirect the second command when a result artifact is needed:
 
 ```bash
-npm run --silent benchmark > /tmp/dom-mutation-tracker-benchmark.json
+npm run --silent benchmark > /tmp/orbi-tation-benchmark.json
 ```
 
 The command builds the package, starts the local static fixture server, runs one

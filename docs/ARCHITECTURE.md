@@ -1,10 +1,10 @@
 # v2 Architecture and Public API
 
 Status: accepted and implemented by the v2 package restructure in
-[#2](https://github.com/norbraet/dom-mutation-tracker/issues/2).
+[#2](https://github.com/norbraet/orbi-tation/issues/2).
 
 This document records the contract established by
-[#22](https://github.com/norbraet/dom-mutation-tracker/issues/22). Changes to
+[#22](https://github.com/norbraet/orbi-tation/issues/22). Changes to
 the public types or dependency direction require an explicit follow-up
 decision.
 
@@ -56,7 +56,7 @@ Importing the package creates no observer, inserts no styles or elements, and
 does not access `document`. Consumers opt in by creating and starting a tracker:
 
 ```ts
-import { createTracker } from "dom-mutation-tracker";
+import { createTracker } from "orbi-tation";
 
 const tracker = createTracker();
 const unsubscribe = tracker.subscribe((event) => {

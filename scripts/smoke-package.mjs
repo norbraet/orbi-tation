@@ -4,9 +4,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const temporaryDirectory = await mkdtemp(
-  path.join(tmpdir(), "dom-mutation-tracker-"),
-);
+const temporaryDirectory = await mkdtemp(path.join(tmpdir(), "orbi-tation-"));
 
 try {
   const packOutput = execFileSync(
@@ -59,8 +57,8 @@ try {
   await writeFile(
     `${consumerDirectory}.mjs`,
     `
-      import { createTracker } from "dom-mutation-tracker";
-      import { createPanel } from "dom-mutation-tracker/panel";
+      import { createTracker } from "orbi-tation";
+      import { createPanel } from "orbi-tation/panel";
       if (typeof createTracker !== "function" || typeof createPanel !== "function") process.exit(1);
       createTracker();
     `,
@@ -68,8 +66,8 @@ try {
   await writeFile(
     `${consumerDirectory}.cjs`,
     `
-      const { createTracker } = require("dom-mutation-tracker");
-      const { createPanel } = require("dom-mutation-tracker/panel");
+      const { createTracker } = require("orbi-tation");
+      const { createPanel } = require("orbi-tation/panel");
       if (typeof createTracker !== "function" || typeof createPanel !== "function") process.exit(1);
       createTracker();
     `,
@@ -77,8 +75,8 @@ try {
   await writeFile(
     `${consumerDirectory}.mts`,
     `
-      import { createTracker, type TrackerMutationEvent } from "dom-mutation-tracker";
-      import { createPanel } from "dom-mutation-tracker/panel";
+      import { createTracker, type TrackerMutationEvent } from "orbi-tation";
+      import { createPanel } from "orbi-tation/panel";
       const tracker = createTracker();
       const listener = (event: TrackerMutationEvent): void => void event.type;
       tracker.subscribe(listener);
@@ -88,8 +86,8 @@ try {
   await writeFile(
     `${consumerDirectory}.cts`,
     `
-      import trackerPackage = require("dom-mutation-tracker");
-      import panelPackage = require("dom-mutation-tracker/panel");
+      import trackerPackage = require("orbi-tation");
+      import panelPackage = require("orbi-tation/panel");
       const tracker: trackerPackage.Tracker = trackerPackage.createTracker();
       panelPackage.createPanel(tracker);
     `,
@@ -110,8 +108,8 @@ try {
         },
       });
 
-      await import("dom-mutation-tracker");
-      await import("dom-mutation-tracker/panel");
+      await import("orbi-tation");
+      await import("orbi-tation/panel");
 
       if (observerCount !== 0) throw new Error("Package import started an observer");
       if (globalThis.DOMMutationTracker !== undefined) throw new Error("Package import exposed a browser global");
@@ -151,10 +149,7 @@ try {
 
   const installedPackage = JSON.parse(
     await readFile(
-      path.join(
-        temporaryDirectory,
-        "node_modules/dom-mutation-tracker/package.json",
-      ),
+      path.join(temporaryDirectory, "node_modules/orbi-tation/package.json"),
       "utf8",
     ),
   );

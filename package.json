@@ -1,5 +1,5 @@
 {
-  "name": "dom-mutation-tracker",
+  "name": "orbi-tation",
   "version": "1.0.0",
   "description": "A typed, framework-agnostic DOM mutation tracker for development workflows.",
   "type": "module",
@@ -63,14 +63,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/norbraet/dom-mutation-tracker.git"
+    "url": "git+https://github.com/norbraet/orbi-tation.git"
   },
   "author": "Norbert Balaž",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/norbraet/dom-mutation-tracker/issues"
+    "url": "https://github.com/norbraet/orbi-tation/issues"
   },
-  "homepage": "https://github.com/norbraet/dom-mutation-tracker#readme",
+  "homepage": "https://github.com/norbraet/orbi-tation#readme",
   "engines": {
     "node": ">=22.19"
   },
