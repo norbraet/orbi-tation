@@ -14,6 +14,7 @@ serializable events through an explicit, side-effect-free package API.
 - Side-effect-free ESM and CommonJS package entries
 - Console presentation and visual highlighting
 - Bounded history, deduplication, subscriptions, and explicit lifecycle control
+- Reproducible Chromium performance benchmarks with machine-readable results
 - Zero runtime dependencies
 
 ## Install
@@ -166,11 +167,21 @@ npm run test:browser:install
 npm run test:browser
 npm run test:package
 npm run test:production
+npm run --silent benchmark
 ```
 
 `npm run verify` runs strict type-checking, unit tests, builds, package packing,
 ESM/CommonJS smoke imports, the focused Chromium integration suite, and a
 production tree-shaking fixture that verifies guarded imports are removed.
+
+## Performance
+
+`npm run --silent benchmark` measures low-volume latency, burst processing,
+large-subtree updates, bounded long-running sessions, retained heap and event
+payloads, and current panel-presentation overhead in headless Chromium. Results
+are environment-specific and are not enforced as brittle shared-CI thresholds.
+See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) for the baseline environment,
+workloads, initial budgets, and interpretation rules.
 
 ## Limitations
 
@@ -179,7 +190,8 @@ production tree-shaking fixture that verifies guarded imports are removed.
 - Selectors describe the target at mutation-processing time and may become
   stale after later DOM changes.
 - Large mutation volumes still have runtime cost despite bounded history and
-  deduplication.
+  deduplication; measure representative application workloads against the
+  documented benchmark rather than assuming negligible overhead.
 
 ## Browser compatibility
 
