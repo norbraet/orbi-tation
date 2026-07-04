@@ -157,6 +157,11 @@ tarball by `pnpm test:package`.
 
 ## Development
 
+Installing dependencies also installs the repository's Lefthook-managed Git
+hooks. Pre-commit hooks check staged files with Prettier and ESLint and prevent
+commits on protected branches. Pre-push hooks run type-checking and unit tests.
+CI repeats these checks as the authoritative merge gate.
+
 ```bash
 pnpm format
 pnpm format:check

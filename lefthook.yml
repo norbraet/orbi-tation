@@ -1,0 +1,62 @@
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      glob: "*.{js,mjs,ts,json,md,yml,yaml,css,html}"
+      run: pnpm format:check:staged "{staged_files}"
+      fail_text: 'Code formatting issues found. Run "pnpm format" and commit again.'
+
+    forbidden-branches:
+      run: |
+        BRANCH=$(git branch --show-current)
+        case "$BRANCH" in
+          main|master|develop|production|release/*)
+            echo "Direct commits to $BRANCH are forbidden!"
+            exit 1
+            ;;
+        esac
+
+    eslint:
+      glob: "*.{js,mjs,ts}"
+      run: pnpm lint:staged "{staged_files}"
+      fail_text: 'ESLint found issues. Run "pnpm lint:fix" and commit again.'
+
+pre-push:
+  commands:
+    forbidden-branches:
+      run: |
+        BRANCH=$(git branch --show-current)
+        case "$BRANCH" in
+          main|master|develop|production|release/*)
+            echo "Pushing to $BRANCH is forbidden!"
+            exit 1
+            ;;
+        esac
+
+    typecheck:
+      run: pnpm typecheck
+      fail_text: "TypeScript type checking failed. Fix the errors and try again."
+
+    test:
+      run: pnpm test
+      fail_text: "Tests failed. Fix the failures and try again."
+
+post-checkout:
+  commands:
+    pnpm-install:
+      files: git diff --name-only HEAD@{1} HEAD
+      glob: "{package.json,pnpm-lock.yaml}"
+      run: |
+        pnpm install --frozen-lockfile
+        echo "Dependencies changed - you may need to restart your development process."
+
+post-merge:
+  commands:
+    pnpm-install:
+      files: git diff --name-only HEAD@{1} HEAD
+      glob: "{package.json,pnpm-lock.yaml}"
+      run: |
+        pnpm install --frozen-lockfile
+        echo "Dependencies changed - you may need to restart your development process."
+
+colors: true
