@@ -57,9 +57,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:check:staged": "prettier --check --ignore-unknown",
-    "lint": "eslint .",
+    "lint": "pnpm build && eslint .",
     "lint:fix": "eslint . --fix",
-    "lint:staged": "eslint",
+    "lint:staged": "pnpm build && eslint",
     "verify": "npm run typecheck && npm test && npm run test:browser && npm run test:package && npm run test:production",
     "prepack": "npm run build"
   },
@@ -75,11 +75,6 @@
   "homepage": "https://github.com/norbraet/orbi-tation#readme",
   "engines": {
     "node": ">=22.19"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "lefthook"
-    ]
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
